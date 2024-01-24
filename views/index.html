@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/puppeteer@21.7.0/lib/cjs/puppeteer/puppeteer.min.js"></script>
+</head>
+<body>
+    <div>
+        <button class="searchbtn">search</button>
+        <input type="text" value="search" class="search_item" placeholder="search here.."></input>
+    </div>
+
+    <div id="x"></div>
+
+
+    
+    <script>
+        let reviewsInner = "";
+
+const url = "https://www.productreview.com.au/search?q=dell%20inspiron";
+
+const main = async () => {
+    console.log("started...");
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto(url);
+
+    const allreviews = await page.evaluate(() => {
+        const reviews = document.getElementsByClassName("KBWI4x");
+        return Array.from(reviews).map((node) => {
+            const para = node.innerText;
+            console.log("paras are: ", para);
+            return { para };
+        });
+    });
+
+    console.log("all reviews are: ", allreviews);
+    reviewsInner = allreviews;
+    await browser.close();
+};
+
+document.getElementsByClassName('searchbtn').addEventListener('click', async()=>{
+    // (async()=>{
+        await main();
+        console.log("review Inner: ",reviewsInner);
+        document.getElementById('x').innerHTML = reviewsInner;
+        
+    // })()
+
+})
+</script>
+    
+</body>
+</html>

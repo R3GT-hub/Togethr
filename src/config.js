@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const connect = mongoose.connect("mongodb://localhost:27017/Togethr");
 
@@ -21,4 +22,5 @@ const LoginSchema = new mongoose.Schema({
 });
 
 const collection =new mongoose.model("Togethr",LoginSchema,"Togethr");
-module.exports=collection;
+// module.exports=collection;
+export default collection;

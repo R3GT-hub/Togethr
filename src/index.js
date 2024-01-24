@@ -1,7 +1,13 @@
-const express=require("express");
-const paths=require("path");
-const bcrypt=require("bcrypt");
-const collection=require("./config");
+// const express=require("express");
+// const paths=require("path");
+// const bcrypt=require("bcrypt");
+// const collection=require("./config");
+
+import express from "express";
+import paths from 'path';
+import bcrypt from 'bcrypt';
+import collection from "./config.js";
+import puppeteer from "puppeteer";
 
 const app=express();
 app.use(express.json());
@@ -56,6 +62,28 @@ else{
     catch{
 res.send("Wrong detail");
     }
+})
+
+app.get("/scrap", async (req, res) => {
+    console.log("started...");
+    
+    const userSearch = req.query.search || "dell%20inspiron"; // Default to "dell%20inspiron" if no search query is provided
+    const url = `https://www.productreview.com.au/search?q=${userSearch}`;
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto(url);
+
+    const allreviews = await page.evaluate(() => {
+        const reviews = document.getElementsByClassName("KBWI4x");
+        return Array.from(reviews).map((node) => {
+            const para = node.innerText;
+            console.log("paras are: ", para);
+            return { para };
+        });
+    });
+
+    res.json({ value: allreviews });
 })
 
 const port=5000;
