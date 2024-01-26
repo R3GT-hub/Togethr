@@ -4,19 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* min-height: 100vh; */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            /* max-width: 600px; */
+            margin: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .input-container {
+            display: flex;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            flex: 1;
+            height: 35px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        #searchbtn,
+        #summarize {
+            height: 45px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            transition: background-color 0.3s;
+        }
+
+        #searchbtn:hover,
+        #summarize:hover {
+            background-color: #45a049;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        #x,
+        .summ {
+            flex: 1;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .summ {
+            margin-left: 20px;
+            border-color: #4CAF50;
+        }
+
+        p {
+            margin: 0;
+            line-height: 1.5;
+        }
+    </style>
 </head>
 <body>
-    <div>
-        <button id="searchbtn">search</button>
-        <input type="text" id="searchInput" class="search_item" placeholder="search here.."></input>
+    <div class="container">
+        <div class="input-container">
+            <input type="text" id="searchInput" class="search_item" placeholder="Search here.."></input>
+            <button id="searchbtn">Search</button>
+        </div>
+
+        <button id="summarize">Summarize</button>
+
+        <div class="result-container">
+            <div id="x"></div>
+            <div class="summ"></div>
+        </div>
     </div>
-
-    <div id="x"></div>
-
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         document.getElementById('searchbtn').addEventListener('click', async () => {
             const userInput = document.getElementById('searchInput').value;
-            const formattedInput = userInput.replace(/ /g, '%20'); // Replace spaces with %20
+            const formattedInput = userInput.replace(/ /g, '+');
             const url = `http://localhost:5000/scrap?search=${formattedInput}`;
 
             let res = await fetch(url, {
@@ -27,7 +121,6 @@
 
             const resultDiv = document.getElementById("x");
 
-            // Clear existing content before appending new results
             resultDiv.innerHTML = "";
 
             res.value.forEach(element => {
@@ -35,7 +128,36 @@
                 pElement.textContent = element.para;
                 resultDiv.appendChild(pElement);
             });
-        })
+        });
+
+        document.getElementById("summarize").addEventListener('click', async () => {
+            const resultDiv = document.getElementById("x");
+            const originalText = resultDiv.innerText;
+
+            // Make API call to summarize the text using axios
+            const apiUrl = "https://tldrthis.p.rapidapi.com/v1/model/abstractive/summarize-text/";
+
+            try {
+                const response = await axios.post(`${apiUrl}?min_length=200&max_length=300`, {
+                    text: originalText
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-RapidAPI-Key': '7580808f09msha9dcc1f63ed65edp183362jsne549db30ac0e',
+                        'X-RapidAPI-Host': 'tldrthis.p.rapidapi.com'
+                    }
+                });
+
+                console.log(response.data);
+
+                // Display summarized data in the 'summ' div
+                
+                const summDiv = document.querySelector(".summ");
+                summDiv.innerHTML = `<p>Summarized Data: ${response.data.summary}</p>`;
+            } catch (error) {
+                console.error("Error:", error.message);
+            }
+        });
     </script>
 </body>
 </html>
